@@ -62,5 +62,5 @@
 ### 或者有需要，直接登录服务器（已 cd 到日志目录）
     #ssh 到第一台
     [user@server name]$ ./gateway ssh 1
-    [user@iZ237g6g378Z logs]$
+    [user@server1 logs]$
     
