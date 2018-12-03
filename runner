@@ -1,0 +1,72 @@
+#!/bin/bash
+###################################################################
+#Description  :登录工具
+#Args         :hosts cdPath cmd [idx]
+#Author       :NaturalL
+#Email        :zjmove@gmail.com
+###################################################################
+
+RED='\033[4;31m'
+YE='\033[0;33m'
+NC='\033[0m'
+
+runner()
+{
+
+  #分隔行,修改或去掉
+  echo -e  "\033[0;36m๑۩۩๑=============== sshRunner ===============๑۩۩๑${NC}"
+
+  local _hosts=$1[@]
+  _hosts=${!_hosts}
+
+  local path=${2}
+  local cmd=${3} #命令
+  local idx=${4:-"0"} #第几台机器
+
+
+  numRe='^[0-9]+$'
+  if ! [[ $idx =~ $numRe ]] ; then
+    _hosts=($idx)
+    idx=0 
+  fi
+
+  local i=1
+
+  case $cmd in
+    ssh)
+      for host in ${_hosts}; do
+        if [ $i -eq $idx ] ; then
+          #写记录
+          echo -e "`date '+%Y-%m-%d %H:%M:%S.%3N'` \t $0 \t $cmd \t $host" >> ./runner_history
+          ssh -t $host "cd $path ; bash"
+          exit 0
+        fi
+        let i=${i}+1
+      done
+      ;;
+    info)
+      for host in ${_hosts}; do
+        echo -e "$i.\t${RED}$host${NC}"
+        let i=${i}+1
+      done
+      ;;
+    *)
+      for host in ${_hosts}; do
+        if [ "$idx" -eq 0 ] || [ $i -eq $idx ] ; then
+            echo -e "${YE}$i.${NC} 🖥️  ${RED}$host${YE} [`date '+%Y-%m-%d %H:%M:%S.%3N'`] ${NC}"
+            if [ "$cmd" != "info" ] ; then
+              #写记录
+              echo -e "`date '+%Y-%m-%d %H:%M:%S.%3N'` \t $0 \t $cmd \t $host" >> ./runner_history
+              ssh -o LogLevel=QUIET -t $host "cd $path ; $cmd 2>&1"
+              #Ctrl-C 等后续都不执行
+              if [[ $? == 255 ]] ; then
+                exit 255
+              fi
+              echo ''
+            fi
+        fi
+        let i=${i}+1
+      done
+      ;;
+    esac
+}

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+source  ./runner
+
+hosts=(server.1 server.2 server.3 server.4)
+
+runner hosts  "/the/path/to/cd" "$1" $2
